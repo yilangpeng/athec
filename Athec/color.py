@@ -1,35 +1,35 @@
+import os, sys, random, warnings
 import numpy as np
 import cv2
-import os, glob, sys, random
 import scipy.stats, scipy.signal, scipy.spatial
 import pyemd
+import misc
 
-from apl import misc
-
-def moments(arr):
+def summary(arr):
+    
     arr = arr.flatten()
     m = np.mean(arr)
     med = np.median(arr)
     std = np.std(arr)
     min = np.amin(arr)
     max = np.amax(arr)
-    q1 = np.percentile(arr, 50)
+    q1 = np.percentile(arr, 25)
     q3 = np.percentile(arr, 75)
-    skewness = scipy.stats.skew(arr)
+    skew = scipy.stats.skew(arr)
     kurto = scipy.stats.kurtosis(arr)
     value, counts = np.unique(arr, return_counts=True)
     ent = scipy.stats.entropy(counts)
-    rlist = [m, med, std, min, max, q1, q3, skewness, kurto, ent]
+    rlist = [m, med, std, min, max, q1, q3, skew, kurto, ent]
     return(rlist)
 
-def moments_two(arr):
+def summary_two(arr):
     arr = arr.flatten()
     m = np.mean(arr)
     std = np.std(arr)
     rlist = [m, std]
     return(rlist)
 
-def moments_circular_hue(hue):
+def summary_circular_hue(hue):
     hue = hue.flatten()
     hue = hue.astype("float")
     cm = scipy.stats.circmean(hue, high=180, low=0)
@@ -37,110 +37,147 @@ def moments_circular_hue(hue):
     rlist = [cm, cstd]
     return(rlist)
 
-def moments_circular_hue_rad(hue):
-    hue = hue.flatten()
-    hue = hue.astype("float")
-    hue_rad = np.radians(hue * 2)
-    cm = scipy.stats.circmean(hue_rad)
-    cstd = scipy.stats.circstd(hue_rad)
-    cm = np.degrees(cm)
-    cstd = np.degrees(cstd)
-    rlist = [cm, cstd]
-    return(rlist)
-
-def attr_RGB(img):
+def attr_RGB(img,
+             return_full = False):
     img = misc.read_img_rgb(img) 
     rgbR, rgbB, rgbG = cv2.split(img)
-    rlist = moments(rgbR) + moments(rgbG) + moments(rgbB)
-    return(rlist)
+    if return_full:
+        rlist = summary(rgbR) + summary(rgbG) + summary(rgbB)
+        statnames = ["mean","median","std_dev","min","max","quartile_1","quartile_3","skew","kurtosis","entropy"]
+    else:
+        rlist = summary_two(rgbR) + summary_two(rgbG) + summary_two(rgbB)
+        statnames = ["mean","std_dev"]
+    
+    channelnames = ["RGB_R", "RGB_G", "RGB_B"]
+    attributes = ["_".join([var1, var2]) for var1 in channelnames for var2 in statnames]
+    d = dict(zip(attributes, rlist))
+    return(d)
 
-def attr_HSV(img):
+def attr_HSV(img,
+             return_full = False):
     img = misc.read_img_rgb(img)
     hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)  
     hsvH, hsvS, hsvV = cv2.split(hsv)
-    rlist = moments(hsvH) + moments(hsvS) + moments(hsvV) + moments_circular_hue(hsvH) + moments_circular_hue_rad(hsvH)
-    return(rlist)
+    if return_full:
+        rlist = summary(hsvH) + summary(hsvS) + summary(hsvV) + summary_circular_hue(hsvH)
+        statnames = ["mean","median","std_dev","min","max","quartile_1","quartile_3","skew","kurtosis","entropy"]
+    else:
+        rlist = summary_two(hsvH) + summary_two(hsvS) + summary_two(hsvV) + summary_circular_hue(hsvH)
+        statnames = ["mean","std_dev"]
 
-def attr_HSL(img):
+    channelnames = ["HSV_H", "HSV_S", "HSV_V"]
+    attributes = ["_".join([var1, var2]) for var1 in channelnames for var2 in statnames]
+    attributes.extend(["HSV_H_circular_mean", "HSV_H_circular_std_dev"])
+    d = dict(zip(attributes, rlist))
+    return(d)
+
+def attr_HSL(img,
+             return_full = False):
     img = misc.read_img_rgb(img)
     hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)  
     hslH, hslL, hslS = cv2.split(hls)
-    rlist = moments(hslH) + moments(hslS) + moments(hslL) + moments_circular_hue(hslH) + moments_circular_hue_rad(hslH)
-    return(rlist)
+    if return_full:
+        rlist = summary(hslH) + summary(hslS) + summary(hslL) + summary_circular_hue(hslH)
+        statnames = ["mean","median","std_dev","min","max","quartile_1","quartile_3","skew","kurtosis","entropy"]
+    else:
+        rlist = summary_two(hslH) + summary_two(hslS) + summary_two(hslL) + summary_circular_hue(hslH)
+        statnames = ["mean","std_dev"]
 
-def attr_XYZ(img):
+    channelnames = ["HSL_H", "HSL_S", "HSL_L"]
+    attributes = ["_".join([var1, var2]) for var1 in channelnames for var2 in statnames]
+    attributes.extend(["HSL_H_circular_mean", "HSL_H_circular_std_dev"])
+    d = dict(zip(attributes, rlist))
+    return(d)
+
+def attr_XYZ(img,
+             return_full = False):
     img = misc.read_img_rgb(img)
     xyz = cv2.cvtColor(img, cv2.COLOR_RGB2XYZ)  
     xyzX, xyzY, xyzZ = cv2.split(xyz)
-    rlist = moments(xyzX) + moments(xyzY) + moments(xyzZ)
-    return(rlist)
+    if return_full:
+        rlist = summary(xyzX) + summary(xyzY) + summary(xyzZ)
+        statnames = ["mean","median","std_dev","min","max","quartile_1","quartile_3","skew","kurtosis","entropy"]
+    else:
+        rlist = summary_two(xyzX) + summary_two(xyzY) + summary_two(xyzZ)
+        statnames = ["mean","std_dev"]
 
-def attr_Lab(img):
+    channelnames = ["XYZ_X", "XYZ_Y", "XYZ_Z"]
+    attributes = ["_".join([var1, var2]) for var1 in channelnames for var2 in statnames]
+    d = dict(zip(attributes, rlist))
+    return(d)
+
+def attr_Lab(img,
+             return_full = False):
     img = misc.read_img_rgb(img)
     lab = cv2.cvtColor(img, cv2.COLOR_RGB2Lab)  
     labL, laba, labb = cv2.split(lab)
-    rlist = moments(labL) + moments(laba) + moments(labb)
-    return(rlist)
+    if return_full:
+        rlist = summary(labL) + summary(laba) + summary(labb)
+        statnames = ["mean","median","std_dev","min","max","quartile_1","quartile_3","skew","kurtosis","entropy"]
+    else:
+        rlist = summary_two(labL) + summary_two(laba) + summary_two(labb)
+        statnames = ["mean","std_dev"]
 
-def attr_grayscale(img):
-    img = misc.read_img_rgb(img) 
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    rlist = moments(gray)
-    return(rlist)
-
-def attr_color_model_simple(img):
-    img = misc.read_img_rgb(img) # RGB
-    rgbR, rgbB, rgbG = cv2.split(img)
-    hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV) # HSV
-    hsvH, hsvS, hsvV = cv2.split(hsv)
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    rlist = moments_two(rgbR) + moments_two(rgbG) + moments_two(rgbB) \
-            + moments_two(hsvH) + moments_two(hsvS) + moments_two(hsvV) + moments_circular_hue(hsvH) \
-            + moments_two(gray) 
-    return(rlist)
+    channelnames = ["Lab_L", "Lab_a", "Lab_b"]
+    attributes = ["_".join([var1, var2]) for var1 in channelnames for var2 in statnames]
+    d = dict(zip(attributes, rlist))
+    return(d)
 
 def tf_grayscale(img,
-                 save_folder = None,
-                 save_subfolder = "grayscale"):
+                 save_path = None):
     rgb = misc.read_img_rgb(img)
     gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
-    if isinstance(save_folder, str):
-        save_path = misc.create_save_path(img, save_folder, save_subfolder)
+    if isinstance(save_path, str):
+        save_path = misc.make_path(save_path)
         cv2.imwrite(save_path, gray)
     return(gray)
 
-def smallest_sublist(A, k): 
-    windowSum = 0     # stores the current window sum
-    length = float('inf')    # stores the result
-    left = 0     # stores window's starting index
+def attr_grayscale(img,
+                   return_full = False):
+    img = misc.read_img_rgb(img) 
+    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    if return_full:
+        rlist = summary(gray)
+        statnames = ["mean","median","std_dev","min","max","quartile_1","quartile_3","skew","kurtosis","entropy"]
+    else:
+        rlist = summary_two(gray)
+        statnames = ["mean","std_dev"]
+    
+    attributes = ["_".join(["gray", var]) for var in statnames]
+    d = dict(zip(attributes, rlist))
+    return(d)
+
+def smallest_sublist(alist, target):
+    '''Find the smallest sublist in a list with sum greater than a give value'''
+    window_sum = 0     # store the current window sum
+    left = 0     # store window's starting index
+    length = float('inf')    # store the result
     final_left = 0
-    final_right = len(A)     # maintain a sliding window [left..right]
-    for right in range(len(A)):         # include current element in the window
-        windowSum += A[right]          # window becomes unstable if its sum becomes more than k
-        while windowSum > k and left <= right:
+    final_right = len(alist)     # maintain a sliding window from left to right
+    for right in range(len(alist)):     # include current element in the window
+        window_sum += alist[right]    # window becomes unstable if its sum becomes more than k
+        while window_sum > target and left <= right:
             # update the result if current window's length is less
             # than minimum found so far
             if right - left + 1 < length:
                 length = right - left + 1
                 final_left = left; final_right = right
-            # remove elements from the window's left side till window
-            # becomes stable again
-            windowSum -= A[left]
+            # remove elements from the window's left side till window becomes stable again
+            window_sum -= alist[left]
             left = left + 1
     return([length, final_left, final_right])
 
 def attr_contrast_range(img,
-                        save_folder = None,
-                        save_subfolder = "contrast range",
-                        range_percent = 0.90):
+                        save_path = None,
+                        threshold = 0.90):
     gray = misc.read_img_gray(img)
     hist = np.bincount(gray.ravel(), minlength=256)
     sum = np.sum(hist)
     phist = hist/sum
-    minimal = sum * range_percent
+    minimal = sum * threshold
     min_range, low_idx, high_idx = smallest_sublist(hist, minimal)
 
-    if isinstance(save_folder, str):
+    if isinstance(save_path, str):
         from matplotlib import pyplot as plt
         from matplotlib.ticker import PercentFormatter
         color_histogram = 'darkgray'
@@ -157,16 +194,17 @@ def attr_contrast_range(img,
         for spine in plt.gca().spines.values(): spine.set_visible(False) # remove frames
         plt.tick_params(axis='both',which='both',bottom=False,top=False,left=False,right=False)
         
-        save_path = misc.create_save_path(img, save_folder, save_subfolder)
+        save_path = misc.make_path(save_path)
         plt.savefig(save_path)
         plt.close()
-
-    rlist = [min_range, low_idx, high_idx]
-    return(rlist)
+    
+    d = {'contrast_range':min_range,
+         'contrast_range_lower':low_idx,
+         'contrast_range_upper':high_idx}
+    return(d)
 
 def attr_contrast_peak(img,
-                       save_folder = None,
-                       save_subfolder = "contrast histogram peak",
+                       save_path = None,
                        savgol_filter_window_length = 51,
                        savgol_filter_polyorder = 5,
                        savgol_filter_mode = "constant",
@@ -176,11 +214,13 @@ def attr_contrast_peak(img,
     sum = np.sum(hist)
     phist = hist/sum
 
+    # apply a smoothing filter to histogram
     smoothed = scipy.signal.savgol_filter(phist, savgol_filter_window_length, savgol_filter_polyorder, mode = savgol_filter_mode)
+    # detect peaks
     peaks = scipy.signal.argrelmax(smoothed, order = argrelmax_order)
     peaks = peaks[0]
 
-    if isinstance(save_folder, str):
+    if isinstance(save_path, str):
         from matplotlib import pyplot as plt
         from matplotlib.ticker import PercentFormatter
         plt.figure(dpi=200)
@@ -197,20 +237,27 @@ def attr_contrast_peak(img,
         for spine in plt.gca().spines.values(): spine.set_visible(False) # remove frames
         plt.tick_params(axis='both',which='both',bottom=False,top=False,left=False,right=False)
 
-        save_path = misc.create_save_path(img, save_folder, save_subfolder)
+        save_path = misc.make_path(save_path)
         plt.savefig(save_path)
         plt.close()
 
     npeak = len(peaks)
     if npeak == 0:
-        rlist = [0, -99999]
+        peak_range = -99999
+        peak_list = []
+        warnings.warn("No peaks are detected! Peak distance is returned as -99999.")
     elif npeak == 1:
-        peak_range = 0
-        rlist = [1, 0]
+        peak_range = -99999
+        peak_list = list(peaks)
+        warnings.warn("Only one peak is detected! Peak distance is returned as -99999.")
     else:
         peak_range = peaks[-1] - peaks[0]
-        rlist = [npeak, peak_range, list(peaks)]
-    return(rlist)
+        peak_list = list(peaks)
+
+    d = {'contrast_n_peak':npeak,
+         'contrast_peak_distance':peak_range,
+         'contrast_peak_list':peak_list}
+    return(d)
 
 def attr_colorful(img):
     rgb = misc.read_img_rgb(img)
@@ -223,7 +270,8 @@ def attr_colorful(img):
     rg_yb_sd = (rg_sd**2 + yb_sd**2)**0.5
     rg_yb_mean = (rg_mean**2 + yb_mean**2)**0.5
     colorful = rg_yb_sd + (rg_yb_mean * 0.3)
-    return(colorful)
+    d = {'colorful':colorful}
+    return(d)
 
 def attr_colorful_emd(img):
     rgb = misc.read_img_rgb(img)
@@ -258,11 +306,12 @@ def attr_colorful_emd(img):
 
     emdist = pyemd.emd(distribution1, distribution2, distance_matrix) # calculate the earth mover's distance between two distributions
     colorful_emd = 128 - emdist # small distance between distribution 1 and 2 means the image is more colorful, so reverse the value
-    return(colorful_emd)
+    d = {'colorful_emd':colorful_emd}
+    return(d)
 
-def attr_color_percentage(img, color_dict = None,
-                          save_folder = None,
-                          save_subfolder = "color percentage"):
+def attr_color_percentage(img,
+                          color_dict = None,
+                          save_path = None):
     rgb = misc.read_img_rgb(img)
     h, w = rgb.shape[:2]
     rgb = rgb.astype('int64') # transform to int64 so it can have values larger than 255
@@ -270,7 +319,7 @@ def attr_color_percentage(img, color_dict = None,
     r8, g8, b8 = cv2.split(rgb8) # get arrays of R, G, B values in bins
     one = r8 * (32 * 32) + g8 * 32 + b8 # convert to one number
     if color_dict is None:
-        from apl import colordict
+        import colordict
         color_dict = colordict.color_dict()
 
     tf = color_dict[one] # get color back; color_dict is a list that is similar to dict: its index is key
@@ -283,32 +332,46 @@ def attr_color_percentage(img, color_dict = None,
 
     black, blue, brown, gray, green, orange, pink, purple, red, white, yellow = color_percents[:]
 
-    nonbw_colors = np.array([blue, brown, green, orange, pink, purple, red, yellow])
+    nonbw_colors = np.array([blue, brown, green, orange, pink, purple, red, yellow]) # exclude black, white, and gray
     if np.sum(nonbw_colors) > 0:
         nonbw_colors = nonbw_colors/np.sum(nonbw_colors)
-        shannon_e = scipy.stats.entropy(nonbw_colors) # Shannon entropy or Shannon index
+        shannon_e = scipy.stats.entropy(nonbw_colors) # Shannon entropy
         simpson_i = 1 - np.sum([p**2 for p in nonbw_colors]) # Simpson index. Subtracted from 1 so higher value means more diverse hues
     else:
+        warnings.warn("All colors are achromatic! Color variety measures are returned as -99999.")
         shannon_e = -99999
         simpson_i = -99999
-    rlist = color_percents[:] + [shannon_e, simpson_i]
 
-    if isinstance(save_folder, str):
+    d = {'black':black,
+         'blue':blue,
+         'brown':brown,
+         'gray':gray,
+         'green':green,
+         'orange':orange,
+         'pink':pink,
+         'purple':purple,
+         'red':red,
+         'white':white,
+         'yellow':yellow,
+         'color_shannon':shannon_e,
+         'color_simpson':simpson_i}
+
+    if isinstance(save_path, str):
         # create a list of RGB values of eleven colors
         l_colorrgbs = [(0, 0, 0),(0, 0, 255),(128, 102, 64), (128, 128, 128), # black, blue, brown, gray
                        (0, 255, 0),(255, 165, 0),(255,192,203),(128,0,128), # green, orange, pink, purple
                        (255, 0, 0),(255, 255, 255),(255, 255, 0)] # red, white, yellow
-
         tfimg = np.zeros((h, w, 3), dtype = 'uint8') # create a blank image
         for i in range(0,11):
             mask = (tf == i) # create a mask (True/False)
-            tfimg[mask] = l_colorrgbs[i]# assign color value based on mask
+            tfimg[mask] = l_colorrgbs[i] # assign color based on mask
         bgr = cv2.cvtColor(tfimg, cv2.COLOR_RGB2BGR) # transform to BGR
-        save_path = misc.create_save_path(img, save_folder, save_subfolder)
+        save_path = misc.make_path(save_path)
         cv2.imwrite(save_path, bgr)
-    return(rlist)
+    return(d)
 
 def hue_colors(nbin = 20):
+    '''get 20 colors for visualization'''
     hsvH = range(int(180/nbin/2), 180, int(180/nbin))
     hsvH = np.array(hsvH)
     hsvS = np.full((nbin,), 255)
@@ -322,8 +385,7 @@ def hue_colors(nbin = 20):
     return(rgb)
 
 def attr_hue_count(img, 
-                   save_folder = None,
-                   save_subfolder = "hue count histogram",
+                   save_path = None,
                    saturation_low = 0.2, 
                    value_low = 0.15, 
                    value_high = 0.95,
@@ -353,7 +415,7 @@ def attr_hue_count(img,
     else:
         hue_count = 0
 
-    if isinstance(save_folder, str) and len(hgood) > 0:
+    if isinstance(save_path, str) and len(hgood) > 0:
         from matplotlib import pyplot as plt
         from matplotlib.ticker import PercentFormatter
         plt.figure(dpi=200)
@@ -367,9 +429,9 @@ def attr_hue_count(img,
         for spine in plt.gca().spines.values(): spine.set_visible(False) # remove frames
         plt.tick_params(axis='both',which='both',bottom=False,top=False,left=False,right=False)
 
-        save_path = misc.create_save_path(img, save_folder, save_subfolder)
-        misc.create_path(save_path)
+        save_path = misc.make_path(save_path)
         plt.savefig(save_path)
         plt.close()
-    rlist = hue_count
-    return(rlist)
+
+    d = {'hue_count':hue_count}
+    return(d)
