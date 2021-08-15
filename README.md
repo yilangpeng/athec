@@ -31,7 +31,7 @@ The current version has been tested on the folllowing versions:
 @article{peng2018feast,
   title={Feast for the Eyes: Effects of Food Perceptions and Computer Vision Features on Food Photo Popularity.},
   author={Peng, Yilang and Jemmott III, John B},
-  journal={International Journal of Communication (19328036)},
+  journal={International Journal of Communication},
   volume={12},
   year={2018}
 }
