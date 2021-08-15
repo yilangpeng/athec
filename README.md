@@ -18,3 +18,14 @@ The current version has been tested on the folllowing versions:
 * pyemd: 0.5.1
 
 2. Run the demo scripts. The documentation about each function is also provided in these scripts.
+
+## Citation
+```
+@article{peng2021athec,
+  title={Athec: A Python Library for Computational Aesthetic Analysis of Visual Media in Social Science Research},
+  author={Peng, Yilang},
+  journal={Computational Communication Research},
+  year={2021}
+}
+```
+
