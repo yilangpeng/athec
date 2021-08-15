@@ -25,7 +25,7 @@ The current version has been tested on the folllowing versions:
   title={Athec: A Python Library for Computational Aesthetic Analysis of Visual Media in Social Science Research},
   author={Peng, Yilang},
   journal={Computational Communication Research},
-  year={2021}
+  year={Forthcoming}
 }
 ```
 
