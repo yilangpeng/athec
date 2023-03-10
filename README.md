@@ -22,7 +22,9 @@ Note: please directly download the scripts from this folder instead of using pip
 After that, make sure you add the package path to the sys paths (see example below):
 
 import os, sys
+
 athec_path = os.path.expanduser("~/Documents/Workspace/Computer vision/Athec/")
+
 sys.path.append(athec_path)
 
 ## Citation
