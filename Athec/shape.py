@@ -2,7 +2,7 @@ import os, math, random
 import cv2
 import numpy as np
 import scipy.stats
-import misc
+from . import misc
 
 def summary_line(arr):
     arr = np.array(arr)

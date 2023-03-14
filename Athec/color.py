@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 import scipy.stats, scipy.signal, scipy.spatial
 import pyemd
-from . import misc
+from . import misc, colordict
 
 def summary(arr):
     
@@ -319,7 +319,6 @@ def attr_color_percentage(img,
     r8, g8, b8 = cv2.split(rgb8) # get arrays of R, G, B values in bins
     one = r8 * (32 * 32) + g8 * 32 + b8 # convert to one number
     if color_dict is None:
-        import colordict
         color_dict = colordict.color_dict()
 
     tf = color_dict[one] # get color back; color_dict is a list that is similar to dict: its index is key

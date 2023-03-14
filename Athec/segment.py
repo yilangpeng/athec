@@ -1,8 +1,8 @@
 #encoding=utf-8
 import os, random
 import numpy as np
-import misc
 import skimage.io, skimage.segmentation, skimage.measure, skimage.future
+from . import misc
 
 def save_label(rgb, label, save_path):
     # visualization 1: assign random colors to segments

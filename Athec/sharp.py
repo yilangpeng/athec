@@ -1,8 +1,8 @@
 import os, math
 import cv2
 import numpy as np
-import misc
 import scipy.stats
+from . import misc
 
 def attr_sharp_laplacian(img,
                          save_path = None):

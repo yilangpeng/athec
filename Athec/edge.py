@@ -2,7 +2,7 @@ import os, random, math
 import numpy as np
 import cv2
 import scipy.spatial, scipy.stats
-import misc, box
+from . import misc, box
 
 def tf_edge_canny(img,
                   save_path = None,

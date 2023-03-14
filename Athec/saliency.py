@@ -1,7 +1,7 @@
 import os, random
 import cv2
 import numpy as np
-import misc, box
+from . import misc, box
 
 def tf_saliency_spectral_residual(img, 
                                   save_path = None):
