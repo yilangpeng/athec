@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-import misc
+from . import misc
 
 def size_of_box(box):
     y1, x1, y2, x2 = box
