@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 import scipy.stats, scipy.signal, scipy.spatial
 import pyemd
-import misc
+from . import misc
 
 def summary(arr):
     
