@@ -18,8 +18,10 @@ The current version has been tested on the folllowing versions:
 * pyemd: 0.5.1
 
 2. Run the demo scripts. The documentation about each function is also provided in these scripts.
-Note: please directly download the scripts from this folder instead of using pip in termal.
-After that, make sure you add the package path to the sys paths (see example below):
+
+Please note that it is recommended to download the scripts directly from this GitHub repository instead of using pip in the terminal, as the version posted there may not be actively maintained.
+
+After downloading the scripts, please ensure that you add the package path to the sys paths as shown in the example below, or alternatively, you can revise the code in the demo scripts:
 
 import os, sys
 
